@@ -1,0 +1,189 @@
+//Initial application variables.
+var express = require('express');
+var bParser = require('body-parser');
+var MongoClient = require('mongodb').MongoClient;
+var app = express();
+
+//The bellow is to allow cross-site access.
+app.use(function(req, res, next){
+	res.header("Access-Control-Allow-Origin", "*");
+	res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+	next();
+});
+
+//body-parser package is used to handle the data from the POST. body-parser is built in to recent releases of express.
+app.use(bParser.urlencoded({extended: true}));
+//Start page.
+app.get("/", function(req, res) {
+	var html = '<img src="https://www.logologo.com/logos/abstract-mollusk-sea-shell-free-logo.jpg"><br>' + 
+	'<form action="/" method="post">Enter UserName: <input type="text" name="userName"/>' + 
+	'<br>Enter PassWord: <input type="password" name="passWord"/><br>' + 
+	'<button type="submit">Submit</button></form><br>Not Registered?<br>' +
+	'<a HREF="http://localhost:4000/newuser">New User Registration</a>';
+	res.send(html);
+});
+//Create login page.
+app.get('/newuser', function(req, res) {
+	var html = '<form action="/newuser" method="post">Create Username: ' +
+	'<input type="text" name="newUser" /><br>Create Password: ' +
+	'<input type="password" name="newPass" /><br>First Name: ' +
+	'<input type="text" name="newName" /><br>Last Name: <input type="text" name="newLast" />' +
+	'<br>eMail Address: <input type="text" name="newEmail" /><br><button type="submit">' +
+	'Create User</button></form><br><a HREF="http://localhost:4000/">Back to Login</a>';
+	res.send(html);
+});
+//Main page.
+app.get('/accessed', function(req, res){
+	var html = '<a HREF="http://localhost:4000/">Login Page</a><br>' +
+	'<a HREF="http://localhost:4000/newuser">Create User Page</a><br>' +
+	'<a HREF="http://localhost:4000/entertasks">Enter Tasks Page</a><br><br>';
+	//Holds user inputed tasks.
+	var tasks = "";
+	//Access the mongo client.
+	MongoClient.connect('mongodb://localhost:27017/devassignstore', function(err, db){
+	    if(err) throw err
+		//Collects a list of tasks to display, stored in database 'devassignstore', collection 'tasks'.
+		var dbCollection = db.collection('tasks');
+		dbCollection.find().toArray(function(err, documents){
+			var colLength = documents.length;
+			for(var i = 0; i < colLength; ++i){
+			tasks = tasks + "Task " + (i + 1) + ": " + documents[i].task + "<br><br>";
+		    } 
+			//Displays site navigation plus the collected list of tasks.
+			res.send(html + tasks);
+			db.close()
+		});
+	});		
+});
+//Enter Tasks page.
+app.get('/entertasks', function(req, res){
+	var html = '<form action="/entertasks" method="post">Enter your task here:<br>' +
+			   '<textarea rows="10" cols="50" name="textBox"></textarea>' + 
+			   '<br><button type="submit">Submit</button>' +
+			   '</form><br><br><a HREF="http://localhost:4000/accessed">Return to Mainpage<a/>';
+	res.send(html);
+			   
+});
+//Processes input from main page.
+app.post('/', function(req, res){
+	//These record the user entry.
+	var userName = req.body.userName;
+	var passWord = req.body.passWord;
+	//What is output given as a result of the authentication process.
+	var html = '';
+	//Acceses the mongo client.
+	MongoClient.connect('mongodb://localhost:27017/devassignstore', function (err, db) {
+	if (err) throw err
+	//Specifies database devassignstore, collection devassignstore.
+	var dbCollection = db.collection('devassignstore');
+	        
+		dbCollection.findOne({"userName":userName}, function (err, documents) {
+		if(err) throw err
+		//Checks if user input for username is found in the database collection.
+		if(documents){
+			//Checks if user input password matches with username input. Validation grants access.
+			if(passWord === documents.passWord){
+				res.redirect("http://localhost:4000/accessed");
+			}
+			//Returns error message in the event of an incorrect password.
+			else
+			{
+				html = '<html><body id ="reloadId"><b>ERROR! Invalid Password!</b><br>' + 
+					   '<button onclick="history.back()">Try Again</button></body></html>';
+				res.send(html);
+			}
+		}
+		//Returns error message in the event of a non-existant username entry.
+		else
+		{
+			html = '<html><body id ="reloadId"><b>ERROR! Invalid Username!</b><br>' + 
+			       '<button onclick="history.back()">Try Again</button></body></html>';
+			res.send(html);
+		}
+		    //Prints user input if found in db.
+			console.log(documents);
+			db.close(); 
+		});
+	});	
+});
+//Collects new user input for login credentials.
+app.post("/newuser", function(req, res){
+	var newUser = req.body.newUser;
+	var newPass = req.body.newPass;
+	var newName = req.body.newName;
+	var newLast = req.body.newLast;
+	var newEmail = req.body.newEmail;
+	var html = "";
+	MongoClient.connect('mongodb://localhost:27017/devassignstore', function (err, db) {
+		if (err) throw err
+		var dbCollection = db.collection('devassignstore');
+		dbCollection.findOne({"userName":newUser}, function (err, documents) {
+			if(err) throw err
+			//Verifies that all fields are filled out and that the username is not already in use.
+			if(newUser && newPass && newName && newLast && newEmail && !documents){
+			//Adds user input to the login credential collection.
+				dbCollection.insert({"userName":newUser,"passWord":newPass,"firstName":newName,"lastName":newLast,"eMail":newEmail}, function(err, result){
+					dbCollection.find().toArray(function(err, documents){
+						console.log(documents);
+						html = '<h1><b>LOGIN CREATION SUCCESSFUL!</b></h1><br>' +
+						'<a HREF="http://localhost:4000/">Return to Login Screen</a>';
+						res.send(html);
+						db.close();
+					});			
+				});
+			}
+			//Error message prints to screen if either a field is missed or if username is already in use.
+			else
+			{
+				html = '<h3><b>ERROR! That username is either taken or we are missing entries from your form.</b></h3>' +
+					   '<form action="/newuser" method="post">Create Username: ' +
+					   '<input type="text" name="newUser" /><br>Create Password: ' +
+				       '<input type="password" name="newPass" /><br>First Name: ' +
+				       '<input type="text" name="newName" /><br>Last Name: <input type="text" name="newLast" />' +
+				       '<br>eMail Address: <input type="text" name="newEmail" /><br><button type="submit">' +
+				       'Create User</button></form><br><a HREF="http://localhost:4000/">Back to Login</a>' 
+				res.send(html);
+				db.close();
+			}
+		});
+	});	
+});
+//Processes task entry.
+app.post("/entertasks", function(req, res){
+	var entry = req.body.textBox;
+	var html = '';
+    MongoClient.connect('mongodb://localhost:27017/devassignstore', function(err, db){
+		if(err) throw err
+		//Assigns database 'devassignstore', collection 'tasks' to variable dbCollection.
+		var dbCollection = db.collection('tasks');
+		//Verifys that there is user input.
+		if(entry){
+			//Adds entry to 'tasks' collection as a 'task'.
+			dbCollection.insert({"task":entry}, function(err, result){
+				dbCollection.find().toArray(function(err, documents){
+					//Posts full task jason to console.
+					console.log(documents);
+					html = '<h1><b>TASK RECIEVED!</b></h1><br><h3><a HREF="http://localhost:4000/accessed">' +
+						   'Return to Mainpage</a></h3>';
+					res.send(html);
+					db.close();
+				});
+			});
+		}
+		//Error message that prompts when user attempts to submit a blank entry.
+		else
+		{
+			html = '<h3><b>ERROR! Please type an entry before clicking submit.</b></h3>' +
+				   '<form action="/entertasks" method="post">Enter your task here:<br>' +
+			       '<textarea rows="10" cols="50" name="textBox"></textarea>' + 
+			       '<br><button type="submit">Submit</button>' +
+			       '</form><br><br><a HREF="http://localhost:4000/accessed">Return to Mainpage<a/>';
+			res.send(html);
+			db.close();
+		}
+	});
+});
+//Listens on port 4000.
+app.listen(4000, function(){
+	console.log("Listening on port 4000");
+});
