@@ -1,0 +1,23 @@
+//Requires express app to run.
+var express = require('express');
+//Requires body-parser app to run.
+var bParser = require('body-parser');
+//Variable used to utilize express.
+var app = express();
+//Used to allow cross-site access.
+app.use(function(req, res, next) {
+	res.header("Access-Control-Allow-Origin", "*");
+	res.header("Access-Control-Allow-Origin", "Origin, X-Requested-With, Content-Type, Accept");
+	next();
+});
+//The body-parser package is used to handle the data from the POST.
+app.use(bParser.urlencoded({extended: true}));
+//This GET should trigger a response on http://127.0.0.1:3005/hello.
+app.get('/hello', function(req, res){
+	var html ="<i>Hello World</i>";
+	res.send(html);
+});
+//This directs node to listen on port 3005.
+app.listen(3005, function() {
+	console.log('Listening on port 3005');
+});
