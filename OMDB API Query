@@ -1,0 +1,65 @@
+<html>
+  <body>
+    <input type="text" id="userSelection" />
+	<button onclick="inputSubmit()">Submit</button>
+	<br>
+	<br>
+	<select id="listSelection">
+	  <option value="star+wars">Star Wars</option>
+	  <option value="the+empire+strikes+back">The Empire Strikes Back</option>
+	  <option value="return+of+the+jedi">Return of The Jedi</option>
+	</select>
+	<button onclick="selectorSubmit()">Submit</button>
+	<br>
+	<br>
+	<label for="titleDisplay">Title: </label>
+    <div id="titleDisplay"></div>
+	<br>
+	<label for="directorDisplay">Director: </label>
+    <div id="directorDisplay"></div>
+	<br>
+	<label for="plotDisplay">Plot: </label>
+    <div id="plotDisplay"></div>
+	<br>
+	<label for="performersDisplay">Actors/Actresses: </label>
+    <div id="performersDisplay"></div>
+	<br>
+	<label for="posterDisplay">Movie Poster: </label>
+	<br>
+    <img id="posterDisplay"></img>
+	<script>
+	  //Function for manual input.
+	  function inputSubmit()
+	  {
+	  var userSelection = document.getElementById("userSelection").value;
+	  //I forgot how useful regex's were.
+	  var formattedSelection = userSelection.replace(/\s/g, "+");
+	  //Requires OMDB API key, can be obtained from OMDBAPI.com.
+	  fetch("http://www.omdbapi.com/?i=tt3896198&apikey=[insert-OMDB-API-key-here]=" + formattedSelection)
+	  .then(function(response){return response.json();})
+	  .then(function(json){
+		document.getElementById('titleDisplay').innerHTML = json.Title;
+		document.getElementById('directorDisplay').innerHTML = json.Director;
+		document.getElementById('plotDisplay').innerHTML = json.Plot;
+		document.getElementById('performersDisplay').innerHTML = json.Actors;
+		document.getElementById('posterDisplay').src = json.Poster;
+	  });
+	  }
+	  //Function for slider input.
+	  function selectorSubmit()
+	  {
+    //Requires OMDB API key, can be obtained from OMDBAPI.com.
+	  var listSelection = document.getElementById("listSelection").value;
+	  fetch("http://www.omdbapi.com/?i=tt3896198&apikey=[insert-OMDB-API-key-here]=" + listSelection)
+	  .then(function(response){return response.json();})
+	  .then(function(json){
+		document.getElementById('titleDisplay').innerHTML = json.Title;
+		document.getElementById('directorDisplay').innerHTML = json.Director;
+        document.getElementById('plotDisplay').innerHTML = json.Plot;
+		document.getElementById('performersDisplay').innerHTML = json.Actors;
+		document.getElementById('posterDisplay').src = json.Poster;
+	  });
+	  }
+	</script>
+  </body>
+</html>
