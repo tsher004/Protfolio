@@ -1,0 +1,11 @@
+<html>
+<body>
+<div id="divLocation"></div>
+<script>
+navigator.geolocation.getCurrentPosition(showLocation);
+	function showLocation(position) {
+		document.getElementById("divLocation").innerHTML = "Latitude: " + position.coords.latitude +  " Longitude: " + position.coords.longitude;
+}
+</script>
+</body>
+</html>
