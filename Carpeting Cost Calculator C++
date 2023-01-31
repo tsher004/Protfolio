@@ -1,0 +1,75 @@
+/*
+  Program Name: carpetCalculator
+  Author: Tim Sherwood
+  - This program is designed to collect user input
+  regarding the costs and material volume needed to
+  carpet one room in the user's home.
+*/
+#include <iostream>
+#include <math.h>
+//I brought in <iomanip> so that I could limit the decimal places of numerical values.
+#include <iomanip>
+
+using namespace std;
+
+int main()
+{
+    //This sets all printed numerical values to 2 decimal places.
+    std::cout << std::fixed;
+    std::cout << std::setprecision(2);
+
+    cout << "What is the name of the room you are carpeting?" << endl;
+    string name;
+    cin >> name;
+/* I formatted user input to round up fractional entries to integers
+in order to reduce the margin for error. I added the int variables
+because they made my equations easier to track on paper.
+*/
+    cout << "How long is the room in feet?" << endl;
+    double length;
+    cin >> length;
+    length = ceil(length);
+    int inLength = length * 1;
+
+    cout << "How wide is the room in feet? \n";
+    double width;
+    cin >> width;
+    width = ceil(width);
+    int inWidth = width * 1;
+
+    double squareYards = (length * width)/9;
+//Collect carpet price.
+    cout << "What is the cost of your carpet per square yard?" << endl;
+    double price;
+    cin >> price;
+//Collect padding cost.
+    cout << "What is the total cost of padding? \n";
+    double paddingCost;
+    cin >> paddingCost;
+//Determines if square yards is prime or not(needs to round up).
+    int exCarpet = (inLength * inWidth) % 9;
+
+    if(exCarpet != 0){
+        int yardsRounder = squareYards * 1;
+        squareYards = yardsRounder + 1;
+    }
+//Here are my output values/equations.
+    double laborCost = 6.03 * squareYards;
+    double totalCost = (squareYards * price) + paddingCost + laborCost;
+    double salesTax = totalCost * 0.057;
+    double salesTotal = totalCost + salesTax;
+
+/*I used setw() with my output to control the character spacing of the labels in order
+to evenly align the numerical values.
+*/
+    cout << "Room Name: " << name << endl;
+    cout << setw(18) << "Square Yards: " << squareYards << endl;
+    cout << setw(18) << "Cost of Material: $" << (squareYards * price) << endl;
+    cout << setw(19) << "Labor Cost: $" << laborCost << endl;
+    cout << setw(19) << "Padding Cost: $" << paddingCost << endl;
+    cout << setw(19) << "Subtotal: $" << totalCost << endl;
+    cout << setw(19) << "Sales Tax: $" << salesTax << endl;
+    cout << setw(19) << "Total: $" << salesTotal << endl;
+//Return 0 for clarity.
+    return 0;
+}
