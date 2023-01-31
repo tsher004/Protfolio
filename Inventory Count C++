@@ -1,0 +1,165 @@
+#include <iostream>
+//Enables precision setting.
+#include <iomanip>
+/*
+Author: Tim Sherwood
+Program: InventorySherwood
+
+Description: The following program is used to collect input data from the user for shipment
+             quantities and remaining inventory after all market transactions for each given
+             store on a list from 1 to 12, with the exception of store 5 which is down for
+             maintenance. Once all data is inputted, the program determines the total
+             remaining inventory, total sales, average sales per store, and percentage of
+             total goods sold along with an assessment for whether or not the owner should
+             continue selling that product line.
+*/
+using namespace std;
+
+int main()
+{
+    //Sets printed numerical values to two decimals.
+    cout << fixed << setprecision(2) << showpoint;
+    //Keeps track of final inventory count.
+    double prezInventory = 0;
+    //Keeps track of the total quantity shipped.
+    double totalUnits = 0;
+    //Keeps track of the number of stores in service.
+    double storeCount = 0;
+    //Tallies final count of units sold.
+    double unitsSold;
+    //Keeps track of the number of stores with sold out inventory.
+    double soldOut;
+    //Keeps track of how many stores have sold over half their original inventory.
+    double highSales;
+    //Holds a temporary value for the quantity shipped to a particular store.
+    double shipQuantity;
+    //Holds a temporary value for the inventory remaining at a particular store after sales.
+    double inventory;
+    //Used to record the average number of sales per store.
+    double avgSold;
+    //Used to record the percentage of items sold.
+    double percentSold;
+    //Used to only let positive input be recorded for shipQuantity.
+    bool shipCheck;
+    //Used to only let positive input be recorded for inventory.
+    bool invCheck;
+
+    //for loop
+    //Collects input data for all 12 stores except store #5 which is under renovation.
+    for(int i = 1; i <= 12; i++){
+
+        /*This if else statement gives a unique response for store #5 because it is being remodeled.
+        Additional closed stores could be listed using ||.
+        */
+        if(i != 5){
+
+            //shipCheck must be declared true for the following while loop to initially run.
+            shipCheck = true;
+
+            //while loop
+            //Collects input for shipQuantity and verifies that the entry is not negative.
+            while(shipCheck){
+
+              cout << "Enter the shipment quantity sent to store "
+              << i << ": ";
+              cin >> shipQuantity;
+
+              //Invalidates any negative entries for shipQuantity.
+              if(shipQuantity >= 0){
+
+                  shipCheck = false;
+
+              }else {
+                //Display message for when the entry for shipQuantity is negative.
+                cout << "Why would we ship negative inventory? Please try again. \n";
+
+              }
+
+            }
+            /*do while loop
+            Takes a current value for inventory and checks to see if the entry is
+            less than or equal to shipQuantity and greater than or equal to 0.
+            */
+            do{
+
+            cout << "Enter the current inventory count for store "
+            << i << ": ";
+            cin >> inventory;
+
+            //Invalidates any inventory entries that are either negative or exceed the original shipment count.
+            if(inventory >= 0 && inventory <= shipQuantity){
+
+                invCheck = false;
+
+            }else {
+
+              //Output for inventory entries that are either negative or exceed original inventory count.
+              cout << "That can't possibly be an accurate inventory count, please try again." << endl;
+              invCheck = true;
+
+            }
+               //This if statement keeps a tally for the number of stores sold out of inventory.
+               if(inventory == 0){
+
+                  soldOut++;
+
+               }
+
+            }while(invCheck);
+
+            //Keeps track of the total items shipped and the remaining items in inventory.
+            prezInventory += inventory;
+            totalUnits += shipQuantity;
+
+            /*This if statement keeps a tally of how many stores have sold more than half
+            of their original shipment inventory.
+            */
+            if(shipQuantity/2 > inventory){
+
+                highSales++;
+
+            }
+
+            //Keeps track of how many stores are processed in order to calculate averages.
+            storeCount++;
+
+        }else {
+
+          //Display message for store 5 which is closed for remodeling.
+          cout << "Store 5 is currently closed for remodeling." << endl;
+
+        }
+
+    }
+    //Calculate number of units sold.
+    unitsSold = totalUnits - prezInventory;
+    //Calculate average sales per store.
+    avgSold = unitsSold / storeCount;
+    //Calculate percentage of total inventory sold.
+    percentSold = (unitsSold / totalUnits) * 100;
+
+    /* break plus output for remaining inventory, units sold, # of sold out stores,
+    # of stores that have sold more than half their inventory, avg sales per store,
+    and overall percentage of units sold.
+    */
+    cout << endl << setw(36) << "Total Remaining Inventory: " << setw(8) << prezInventory << " units" << endl;
+    cout << setw(36) << "Total Units Sold: " << setw(8) << unitsSold << " units" << endl;
+    cout << setw(36) << "Stores Sold Out of Inventory: " << setw(8) << soldOut << " stores" << endl;
+    cout << setw(36) << "Stores That Are Over Half Sold Out: " << setw(8) << highSales << " stores" << endl;
+    cout << setw(36) << "Average Sales Per Store: " << setw(8) << avgSold << " units" << endl;
+    cout << setw(36) << "Overall Percentage of Units Sold: " << setw(8) << percentSold << "%" << endl << endl
+    << endl;
+
+    //This if/else statement produces an assessment of the product's marketability.
+    if(percentSold >= 50){
+
+        cout << "Wow! Sales are doing pretty good, let's continue to invest in this product line.\n";
+
+    }else{
+
+      cout << "Sales for this product seem pretty weak. Let's discontinue this product.\n";
+
+    }
+
+    return 0;
+}
